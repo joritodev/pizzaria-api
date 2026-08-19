@@ -147,4 +147,19 @@ export class Order {
   cancel(): void {
     this.transitionTo("CANCELLED");
   }
+
+  toPublic() {
+    return {
+      id: this.id,
+      customerId: this.customerId,
+      address: this.address,
+      status: this.statusInternal,
+      totalAmountInCents: this.totalAmountInCents,
+      items: this.itemsInternal.map((item) => ({
+        productId: item.productId,
+        quantity: item.quantity,
+        unitPriceInCents: item.unitPriceInCents,
+      })),
+    };
+  }
 }
