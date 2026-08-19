@@ -2,7 +2,7 @@
 
 API backend de uma pizzaria (usuários, cardápio e pedidos), feita com **Bun**, **Elysia**, **Drizzle ORM** e **PostgreSQL**.
 
-Projeto em desenvolvimento, com foco em arquitetura, testes e Git — pensado para um estágio backend com Bun.
+Projeto em desenvolvimento, com arquitetura em **camadas + DDD light**. O contrato está em [`AGENTS.md`](./AGENTS.md).
 
 ## Stack
 
@@ -54,8 +54,9 @@ bun run db:studio     # abre o Drizzle Studio
 
 ```bash
 bun test
+bun test --watch
 ```
 
 ## Status
 
-A base do banco (schema TypeScript + primeira migration) já está pronta. Próximos passos: arquitetura em camadas, Drizzle na API, endpoints e testes de integração.
+Schema Drizzle e domínio `Product` estão prontos. Próximo: agregado `Order`, repositórios, auth e endpoints.
