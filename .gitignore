@@ -50,3 +50,4 @@ o que fazer.txt
 **/*.log
 package-lock.json
 **/*.bun
+/generated
