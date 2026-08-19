@@ -114,6 +114,12 @@ export class Order {
     );
   }
 
+  /** Monta um pedido que já existe no banco, preservando id e status. */
+  static reconstitute(input: CreateOrderInput & { id: string; status: OrderStatus }): Order {
+    const created = Order.create(input);
+    return new Order(input.id, created.customerId, created.address, [...created.items], input.status);
+  }
+
   get status(): OrderStatus {
     return this.statusInternal;
   }
