@@ -36,7 +36,16 @@ bun run db:migrate
 bun run dev
 ```
 
-`GET http://localhost:3000` deve responder `Hello Elysia`.
+`GET http://localhost:3000/health` deve responder `{ "ok": true }`.
+
+## Auth
+
+| Método | Rota | Body |
+| --- | --- | --- |
+| POST | `/auth/register` | `{ name, email, password }` |
+| POST | `/auth/login` | `{ email, password }` |
+
+A resposta traz `user` (sem senha) e `token` (JWT). Inclua `JWT_SECRET` no `.env`.
 
 ## Banco de dados
 
@@ -59,4 +68,4 @@ bun test --watch
 
 ## Status
 
-Schema Drizzle e domínio `Product` estão prontos. Próximo: agregado `Order`, repositórios, auth e endpoints.
+Domínio, repositórios e auth (cadastro/login + JWT) prontos. Próximo: rotas de cardápio e pedidos.
