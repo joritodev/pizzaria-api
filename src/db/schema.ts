@@ -2,7 +2,6 @@ import { relations } from "drizzle-orm";
 import {
   boolean,
   integer,
-  numeric,
   pgEnum,
   pgTable,
   text,
@@ -46,7 +45,7 @@ export const products = pgTable("products", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: text("name").notNull(),
   description: text("description"),
-  price: numeric("price", { precision: 10, scale: 2 }).notNull(),
+  price: integer("price").notNull(),
   category: text("category").notNull(), // e.g. "PIZZA", "BEBIDA"
   isAvailable: boolean("is_available").notNull().default(true),
   ...timestamps,
@@ -58,7 +57,7 @@ export const orders = pgTable("orders", {
     .notNull()
     .references(() => users.id, { onDelete: "restrict", onUpdate: "cascade" }),
   status: orderStatusEnum("status").notNull().default("PENDING"),
-  totalAmount: numeric("total_amount", { precision: 10, scale: 2 }).notNull(),
+  totalAmount: integer("total_amount").notNull(),
   address: text("address").notNull(),
   ...timestamps,
 });
@@ -80,7 +79,7 @@ export const orderItems = pgTable(
         onUpdate: "cascade",
       }),
     quantity: integer("quantity").notNull(),
-    unitPrice: numeric("unit_price", { precision: 10, scale: 2 }).notNull(),
+    unitPrice: integer("unit_price").notNull(),
   },
   (table) => [
     unique("order_items_order_id_product_id_key").on(
