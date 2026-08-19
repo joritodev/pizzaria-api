@@ -338,9 +338,11 @@ Uma tarefa só está pronta quando:
 
 ---
 
-## 15. Roadmap
+## 15. Roadmap (entrega: sexta, 21/08/2026)
 
-**Dia 1 — Fundação**
+Prazo fechado. Sem escopo extra. Se atrasar, corta o bônus (CI), **não** corta pedido, cache nem rate limit.
+
+**Quarta 19/08 — Fundação**
 
 1. Ajustar schema: dinheiro para `integer` (centavos), regerar migration
 2. Subir Docker e aplicar migration
@@ -348,14 +350,14 @@ Uma tarefa só está pronta quando:
 4. Interfaces de repositório + implementações Drizzle
 5. Auth: registro, login, JWT, hash com `Bun.password`
 
-**Dia 2 — API**
+**Quinta 20/08 — API**
 
 6. Handler global de erros + classes de erro
 7. Middleware de autenticação e autorização (admin)
 8. Rotas de produtos (com DTOs)
 9. Rotas de pedidos (criar, listar, detalhe, status, cancelar)
 
-**Dia 3 — Produção e entrega**
+**Sexta 21/08 — Produção e entrega**
 
 10. Cache do cardápio + invalidação
 11. Rate limit
@@ -363,7 +365,7 @@ Uma tarefa só está pronta quando:
 13. README final (como rodar, decisões, endpoints)
 14. Revisão geral, testes verdes, merge em `develop`
 
-Bônus, se sobrar tempo: GitHub Actions rodando `bun test` a cada push.
+Bônus, só se as 14 itens acima estiverem verdes: GitHub Actions rodando `bun test` a cada push.
 
 ---
 
