@@ -1,6 +1,6 @@
 # Pizzaria API
 
-API backend de uma pizzaria (usuários, cardápio e pedidos), feita com **Bun**, **Elysia**, **Prisma** e **PostgreSQL**.
+API backend de uma pizzaria (usuários, cardápio e pedidos), feita com **Bun**, **Elysia**, **Drizzle ORM** e **PostgreSQL**.
 
 Projeto em desenvolvimento, com foco em arquitetura, testes e Git — pensado para um estágio backend com Bun.
 
@@ -8,7 +8,7 @@ Projeto em desenvolvimento, com foco em arquitetura, testes e Git — pensado pa
 
 - **Bun** — runtime e gerenciador de pacotes
 - **Elysia** — framework HTTP
-- **Prisma 7** — ORM e migrations
+- **Drizzle ORM** — schema TypeScript, queries e migrations
 - **PostgreSQL 15** — banco (via Docker)
 
 ## Como rodar
@@ -27,7 +27,7 @@ Copie `.env.example` para `.env`. Não commite o `.env`.
 
 ```bash
 bun install
-bunx prisma migrate dev
+bun run db:migrate
 ```
 
 ### 4. Subir a API
@@ -38,6 +38,24 @@ bun run dev
 
 `GET http://localhost:3000` deve responder `Hello Elysia`.
 
+## Banco de dados
+
+O schema fica em `src/db/schema.ts`. O client Drizzle é criado em `src/db/index.ts` (`getDb()`), para uso nas próximas camadas da API.
+
+Comandos úteis:
+
+```bash
+bun run db:generate   # gera SQL a partir do schema
+bun run db:migrate    # aplica migrations pendentes
+bun run db:studio     # abre o Drizzle Studio
+```
+
+## Testes
+
+```bash
+bun test
+```
+
 ## Status
 
-A base do banco (schema + primeira migration) já está pronta. Próximos passos: arquitetura em camadas, Prisma Client na API, endpoints e testes.
+A base do banco (schema TypeScript + primeira migration) já está pronta. Próximos passos: arquitetura em camadas, Drizzle na API, endpoints e testes de integração.
