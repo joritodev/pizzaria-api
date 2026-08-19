@@ -1,8 +1,10 @@
 import { ConflictError, ForbiddenError, NotFoundError, UnauthorizedError } from "../domain/shared/app-errors";
 import { DomainError } from "../domain/shared/domain-error";
+import { TooManyRequestsError } from "../infrastructure/rate-limit/sliding-window-rate-limiter";
 
 export function toHttpError(error: unknown): {
   status: number;
+  headers?: Record<string, string>;
   body: { error: { code: string; message: string } };
 } {
   if (error instanceof DomainError) {
@@ -23,6 +25,14 @@ export function toHttpError(error: unknown): {
 
   if (error instanceof ConflictError) {
     return { status: 409, body: { error: { code: "CONFLICT", message: error.message } } };
+  }
+
+  if (error instanceof TooManyRequestsError) {
+    return {
+      status: 429,
+      headers: { "Retry-After": String(error.retryAfterSeconds) },
+      body: { error: { code: "TOO_MANY_REQUESTS", message: error.message } },
+    };
   }
 
   return { status: 500, body: { error: { code: "INTERNAL_ERROR", message: "Erro interno." } } };

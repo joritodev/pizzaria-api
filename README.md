@@ -73,6 +73,12 @@ bun run db:migrate    # aplica migrations pendentes
 bun run db:studio     # abre o Drizzle Studio
 ```
 
+## Cache e rate limit
+
+- **Cache:** `GET /products` e `GET /products/:id` ficam 60s em memória. Criar/desativar produto apaga as chaves `products:*`.
+- **Rate limit:** janela deslizante em memória. 100 req/min por IP no geral; **5 req/min** em `/auth/login` e `/auth/register`. Estouro → **429** + `Retry-After`.
+- Com várias instâncias da API, o estado em memória não é compartilhado — em produção o equivalente seria Redis.
+
 ## Testes
 
 ```bash
@@ -82,4 +88,4 @@ bun test --watch
 
 ## Status
 
-Auth, cardápio e pedidos (HTTP) prontos. Próximo: cache do cardápio e rate limit.
+API completa para o escopo do estágio. Falta seed de cardápio e revisão final.
