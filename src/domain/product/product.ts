@@ -47,4 +47,17 @@ export class Product {
       input.isAvailable ?? true,
     );
   }
+
+  /** Monta um produto que já existe no banco, sem gerar id novo. */
+  static reconstitute(input: CreateProductInput & { id: string }): Product {
+    const product = Product.create(input);
+    return new Product(
+      input.id,
+      product.name,
+      product.priceInCents,
+      product.category,
+      product.description,
+      product.isAvailable,
+    );
+  }
 }
