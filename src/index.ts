@@ -1,6 +1,7 @@
 import { getDb } from "./db";
 import { BunPasswordHasher } from "./infrastructure/auth/bun-password-hasher";
 import { JwtTokenService } from "./infrastructure/auth/jwt-token-service";
+import { DrizzleOrderRepository, DrizzleProductRepository } from "./infrastructure/db/drizzle-repositories";
 import { DrizzleUserRepository } from "./infrastructure/db/drizzle-user-repository";
 import { createApp } from "./presentation/app";
 
@@ -10,8 +11,12 @@ export function createProductionApp() {
     throw new Error("JWT_SECRET não está definida. Copie .env.example para .env.");
   }
 
+  const db = getDb();
+
   return createApp({
-    users: new DrizzleUserRepository(getDb()),
+    users: new DrizzleUserRepository(db),
+    products: new DrizzleProductRepository(db),
+    orders: new DrizzleOrderRepository(db),
     hasher: new BunPasswordHasher(),
     tokens: new JwtTokenService(secret),
   });

@@ -60,4 +60,26 @@ export class Product {
       product.isAvailable,
     );
   }
+
+  deactivate(): Product {
+    return new Product(
+      this.id,
+      this.name,
+      this.priceInCents,
+      this.category,
+      this.description,
+      false,
+    );
+  }
+
+  toPublic() {
+    return {
+      id: this.id,
+      name: this.name,
+      description: this.description,
+      priceInCents: this.priceInCents,
+      category: this.category,
+      isAvailable: this.isAvailable,
+    };
+  }
 }

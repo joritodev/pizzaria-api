@@ -45,7 +45,21 @@ bun run dev
 | POST | `/auth/register` | `{ name, email, password }` |
 | POST | `/auth/login` | `{ email, password }` |
 
-A resposta traz `user` (sem senha) e `token` (JWT). Inclua `JWT_SECRET` no `.env`.
+A resposta traz `user` (sem senha) e `token` (JWT). Nas rotas abaixo, envie `Authorization: Bearer <token>`.
+
+## Cardápio e pedidos
+
+| Método | Rota | Acesso |
+| --- | --- | --- |
+| GET | `/products` | público |
+| GET | `/products/:id` | público |
+| POST | `/products` | admin |
+| DELETE | `/products/:id` | admin (desativa) |
+| POST | `/orders` | autenticado (`customerId` vem do JWT) |
+| GET | `/orders` | autenticado (admin vê todos) |
+| GET | `/orders/:id` | dono ou admin |
+| PATCH | `/orders/:id/status` | admin |
+| POST | `/orders/:id/cancel` | dono |
 
 ## Banco de dados
 
@@ -68,4 +82,4 @@ bun test --watch
 
 ## Status
 
-Domínio, repositórios e auth (cadastro/login + JWT) prontos. Próximo: rotas de cardápio e pedidos.
+Auth, cardápio e pedidos (HTTP) prontos. Próximo: cache do cardápio e rate limit.

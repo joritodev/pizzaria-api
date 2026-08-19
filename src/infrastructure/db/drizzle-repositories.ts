@@ -112,6 +112,21 @@ export class DrizzleOrderRepository implements OrderRepository {
 
     return result;
   }
+
+  async listAll(): Promise<Order[]> {
+    const rows = await this.db.select().from(orders);
+    const result: Order[] = [];
+
+    for (const row of rows) {
+      const items = await this.db
+        .select()
+        .from(orderItems)
+        .where(eq(orderItems.orderId, row.id));
+      result.push(toOrder(row, items));
+    }
+
+    return result;
+  }
 }
 
 function toProduct(row: typeof products.$inferSelect): Product {

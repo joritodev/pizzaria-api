@@ -1,5 +1,7 @@
 import { describe, expect, test } from "bun:test";
 
+import { InMemoryOrderRepository } from "../infrastructure/persistence/in-memory-order-repository";
+import { InMemoryProductRepository } from "../infrastructure/persistence/in-memory-product-repository";
 import { InMemoryUserRepository } from "../infrastructure/persistence/in-memory-user-repository";
 import { JwtTokenService } from "../infrastructure/auth/jwt-token-service";
 import { createApp } from "./app";
@@ -17,6 +19,8 @@ class FakeHasher {
 function testApp() {
   return createApp({
     users: new InMemoryUserRepository(),
+    products: new InMemoryProductRepository(),
+    orders: new InMemoryOrderRepository(),
     hasher: new FakeHasher(),
     tokens: new JwtTokenService("test-secret-test-secret-test-secret"),
   });

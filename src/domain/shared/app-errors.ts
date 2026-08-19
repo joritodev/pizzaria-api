@@ -11,3 +11,17 @@ export class UnauthorizedError extends Error {
     this.name = "UnauthorizedError";
   }
 }
+
+export class ForbiddenError extends Error {
+  constructor(message = "Você não tem permissão para esta ação.") {
+    super(message);
+    this.name = "ForbiddenError";
+  }
+}
+
+export class NotFoundError extends Error {
+  constructor(message = "Recurso não encontrado.") {
+    super(message);
+    this.name = "NotFoundError";
+  }
+}
