@@ -31,7 +31,7 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 
-# Prisma CLI dumps agent skill folders locally; they are not part of the API
+# local agent/tooling folders that are not part of the API
 .agents/
 .claude/
 .windsurf/
@@ -50,5 +50,3 @@ o que fazer.txt
 **/*.log
 package-lock.json
 **/*.bun
-/src/generated/prisma
-/generated
