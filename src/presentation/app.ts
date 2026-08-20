@@ -63,8 +63,8 @@ export function createApp(deps: AppDeps) {
         throw new TooManyRequestsError(undefined, decision.retryAfterSeconds);
       }
     })
-    .onError(({ error, set }) => {
-      const mapped = toHttpError(error);
+    .onError(({ error, code, set }) => {
+      const mapped = toHttpError(error, code);
       set.status = mapped.status;
       if (mapped.headers) {
         for (const [key, value] of Object.entries(mapped.headers)) {
