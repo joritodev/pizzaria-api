@@ -1,94 +1,167 @@
 # Pizzaria API
 
-API backend de uma pizzaria (usuários, cardápio e pedidos), feita com **Bun**, **Elysia**, **Drizzle ORM** e **PostgreSQL**.
+API REST de uma pizzaria: cadastro/login, cardápio e pedidos com ciclo de vida.
 
-Projeto em desenvolvimento, com arquitetura em **camadas + DDD light**. O contrato está em [`AGENTS.md`](./AGENTS.md).
-
-## Stack
-
-- **Bun** — runtime e gerenciador de pacotes
-- **Elysia** — framework HTTP
-- **Drizzle ORM** — schema TypeScript, queries e migrations
-- **PostgreSQL 15** — banco (via Docker)
+Feita com **Bun**, **Elysia**, **Drizzle ORM** e **PostgreSQL 15**. Arquitetura em **camadas + DDD light**. O contrato interno do projeto está em [`AGENTS.md`](./AGENTS.md).
 
 ## Como rodar
 
-### 1. Subir o banco
+Pré-requisitos: [Bun](https://bun.sh), Docker Desktop.
 
 ```bash
-docker compose up -d
-```
-
-### 2. Variáveis de ambiente
-
-Copie `.env.example` para `.env`. Não commite o `.env`.
-
-### 3. Instalar dependências, migrar e popular o banco
-
-```bash
+docker compose up -d          # Postgres na porta 5432
+cp .env.example .env          # no Windows: copy .env.example .env
 bun install
 bun run db:migrate
 bun run db:seed
+bun run dev
 ```
 
-O seed cria usuários de demo e um cardápio de exemplo. Pode rodar de novo sem duplicar (upsert por id fixo).
+Checagem: `GET http://localhost:3000/health` → `{ "ok": true }`.
 
-**Credenciais de desenvolvimento (não use em produção):**
+A raiz `/` não tem página — é API. Resposta esperada: **404**.
+
+### Variáveis de ambiente
+
+| Variável | Uso |
+| --- | --- |
+| `DATABASE_URL` | Postgres (sem `?schema=public` — isso é convenção do Prisma) |
+| `JWT_SECRET` | Assinatura do JWT (HS256) |
+
+Não commite o `.env`.
+
+### Credenciais de demo (seed)
 
 | Papel | E-mail | Senha |
 | --- | --- | --- |
 | Admin | `admin@pizzaria.local` | `admin12345` |
 | Cliente | `cliente@pizzaria.local` | `cliente12345` |
 
-### 4. Subir a API
+Só para desenvolvimento local. O seed é idempotente (`bun run db:seed` de novo não duplica).
 
-```bash
-bun run dev
+## Endpoints
+
+Em rotas autenticadas: header `Authorization: Bearer <token>`.
+
+| Método | Rota | Acesso | Observação |
+| --- | --- | --- | --- |
+| GET | `/health` | público | Health check |
+| POST | `/auth/register` | público | Cria sempre `CUSTOMER` |
+| POST | `/auth/login` | público | Devolve `user` + `token` |
+| GET | `/products` | público | Com cache |
+| GET | `/products/:id` | público | Com cache |
+| POST | `/products` | admin | Body: `name`, `priceInCents`, `category`, `description?` |
+| DELETE | `/products/:id` | admin | Soft delete (`isAvailable = false`) |
+| POST | `/orders` | autenticado | `customerId` vem do JWT; **não** envie preço |
+| GET | `/orders` | autenticado | Cliente: os seus; admin: todos |
+| GET | `/orders/:id` | dono ou admin | 403 se não for dono |
+| PATCH | `/orders/:id/status` | admin | Valida máquina de estados |
+| POST | `/orders/:id/cancel` | dono | Só em `PENDING` ou `PREPARING` |
+
+### Exemplos
+
+**Login**
+
+```http
+POST /auth/login
+Content-Type: application/json
+
+{ "email": "cliente@pizzaria.local", "password": "cliente12345" }
 ```
 
-`GET http://localhost:3000/health` deve responder `{ "ok": true }`.
+**Criar pedido** (use um `productId` de `GET /products`)
 
-## Auth
+```http
+POST /orders
+Authorization: Bearer <token>
+Content-Type: application/json
 
-| Método | Rota | Body |
-| --- | --- | --- |
-| POST | `/auth/register` | `{ name, email, password }` |
-| POST | `/auth/login` | `{ email, password }` |
-
-A resposta traz `user` (sem senha) e `token` (JWT). Nas rotas abaixo, envie `Authorization: Bearer <token>`.
-
-## Cardápio e pedidos
-
-| Método | Rota | Acesso |
-| --- | --- | --- |
-| GET | `/products` | público |
-| GET | `/products/:id` | público |
-| POST | `/products` | admin |
-| DELETE | `/products/:id` | admin (desativa) |
-| POST | `/orders` | autenticado (`customerId` vem do JWT) |
-| GET | `/orders` | autenticado (admin vê todos) |
-| GET | `/orders/:id` | dono ou admin |
-| PATCH | `/orders/:id/status` | admin |
-| POST | `/orders/:id/cancel` | dono |
-
-## Banco de dados
-
-O schema fica em `src/db/schema.ts`. O client Drizzle é criado em `src/db/index.ts` (`getDb()`), para uso nas próximas camadas da API.
-
-Comandos úteis:
-
-```bash
-bun run db:generate   # gera SQL a partir do schema
-bun run db:migrate    # aplica migrations pendentes
-bun run db:seed       # cardápio + usuários de demo
-bun run db:studio     # abre o Drizzle Studio
+{
+  "address": "Rua das Pizzas, 100",
+  "items": [
+    { "productId": "22222222-2222-4222-8222-222222222201", "quantity": 1 }
+  ]
+}
 ```
+
+**Mudar status** (admin)
+
+```http
+PATCH /orders/<id>/status
+Authorization: Bearer <token-admin>
+Content-Type: application/json
+
+{ "status": "PREPARING" }
+```
+
+### Status do pedido
+
+```text
+PENDING → PREPARING → OUT_FOR_DELIVERY → DELIVERED
+   │           │
+   └───────────┴──→ CANCELLED
+```
+
+`DELIVERED` e `CANCELLED` são finais.
+
+## Decisões importantes
+
+| Decisão | Escolha | Motivo |
+| --- | --- | --- |
+| Dinheiro | Inteiro em **centavos** (`4500` = R$ 45,00) | Evita erro de ponto flutuante |
+| IDs | UUID | Não expõe volume de vendas |
+| Camadas | presentation → application → domain ← infrastructure | Domínio sem Elysia/Drizzle |
+| Senha | `Bun.password` (argon2id) | Hash nativo; nunca texto puro |
+| Exclusão de produto | Soft delete | Pedido antigo ainda referencia o produto |
+| Preço no pedido | Congelado na criação | Mudança no cardápio não altera pedido passado |
+| DTO de entrada | Schema `t.Object` do Elysia | Sem classe DTO duplicada |
+| DTO de saída | `toPublic()` | Não vaza hash nem linha crua do banco |
+
+**Fora de escopo (de propósito):** pagamento real, frontend, WebSocket, microserviços, Redis, Kubernetes.
+
+Cache e rate limit hoje são **em memória**. Com várias instâncias da API, o estado não é compartilhado — em produção o equivalente seria Redis. A interface `CacheStore` já permite trocar a implementação sem mudar o caso de uso.
+
+## Arquitetura (resumo)
+
+```text
+presentation/   rotas HTTP, JWT, erros → status
+application/    casos de uso + portas (interfaces)
+domain/         Product, Order, User — regras de negócio
+infrastructure/ Drizzle, cache Map, rate limit, Bun.password, JWT
+```
+
+Regra de ouro: regra de negócio mora no **domínio**, não na rota.
+
+## Erros HTTP
+
+Formato: `{ "error": { "code": "...", "message": "..." } }`.
+
+| Situação | Status |
+| --- | --- |
+| Regra de negócio | 400 |
+| Sem token / inválido | 401 |
+| Sem permissão | 403 |
+| Recurso ou rota inexistente | 404 |
+| Conflito (ex.: e-mail duplicado) | 409 |
+| Body fora do schema | 422 |
+| Rate limit | 429 (+ `Retry-After`) |
+| Falha inesperada | 500 (mensagem genérica) |
 
 ## Cache e rate limit
 
-- **Cache:** `GET /products` e `GET /products/:id` ficam 60s em memória. Criar/desativar produto apaga as chaves `products:*`.
-- **Rate limit:** janela deslizante em memória. 100 req/min por IP no geral; **5 req/min** em `/auth/login` e `/auth/register`. Estouro → **429** + `Retry-After`.
-- Com várias instâncias da API, o estado em memória não é compartilhado — em produção o equivalente seria Redis.
+- **Cache:** `products:list` e `products:{id}`, TTL 60s. Criar/desativar produto invalida o prefixo `products:`.
+- **Rate limit:** janela deslizante. Geral **100/min** por IP; login/register **5/min**. Headers `X-RateLimit-Limit` e `X-RateLimit-Remaining`.
+
+## Banco
+
+Schema em `src/db/schema.ts`. Tabelas: `users`, `products`, `orders`, `order_items`.
+
+```bash
+bun run db:generate   # gera SQL a partir do schema
+bun run db:migrate    # aplica migrations
+bun run db:seed       # demo
+bun run db:studio     # UI do Drizzle
+```
 
 ## Testes
 
@@ -97,6 +170,15 @@ bun test
 bun test --watch
 ```
 
-## Status
+Cobrem domínio, casos de uso (repositórios em memória) e HTTP via `app.handle` — sem subir servidor.
 
-API completa para o escopo do estágio: auth, cardápio, pedidos, cache, rate limit e seed de demo.
+## Stack
+
+| Peça | Tecnologia |
+| --- | --- |
+| Runtime | Bun |
+| HTTP | Elysia |
+| ORM | Drizzle |
+| Banco | PostgreSQL 15 (Docker) |
+| Auth | JWT (`jose`) + `Bun.password` |
+| Testes | `bun test` |
