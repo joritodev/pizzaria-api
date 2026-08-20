@@ -72,4 +72,40 @@ describe("cardápio e pedidos", () => {
     expect(order.customerId).toBe("cust-1");
     expect(order.totalAmountInCents).toBe(4500);
   });
+
+  test("admin edita produto com PATCH; cliente não pode", async () => {
+    const { app, tokens } = testApp();
+    const customerToken = await tokens.sign({ userId: "cust-1", role: "CUSTOMER" });
+    const adminToken = await tokens.sign({ userId: "admin-1", role: "ADMIN" });
+
+    const created = await app.handle(
+      new Request("http://localhost/products", {
+        method: "POST",
+        headers: { "content-type": "application/json", authorization: `Bearer ${adminToken}` },
+        body: JSON.stringify({ name: "Margherita", priceInCents: 4500, category: "PIZZA" }),
+      }),
+    );
+    const product = (await created.json()) as { id: string };
+
+    const denied = await app.handle(
+      new Request(`http://localhost/products/${product.id}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json", authorization: `Bearer ${customerToken}` },
+        body: JSON.stringify({ priceInCents: 1 }),
+      }),
+    );
+    expect(denied.status).toBe(403);
+
+    const patched = await app.handle(
+      new Request(`http://localhost/products/${product.id}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json", authorization: `Bearer ${adminToken}` },
+        body: JSON.stringify({ priceInCents: 4700 }),
+      }),
+    );
+    expect(patched.status).toBe(200);
+    const body = (await patched.json()) as { priceInCents: number; name: string };
+    expect(body.priceInCents).toBe(4700);
+    expect(body.name).toBe("Margherita");
+  });
 });

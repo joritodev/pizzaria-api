@@ -17,6 +17,7 @@ import { ListOrders } from "../application/use-cases/list-orders";
 import { ListProducts } from "../application/use-cases/list-products";
 import { LoginUser } from "../application/use-cases/login-user";
 import { RegisterUser } from "../application/use-cases/register-user";
+import { UpdateProduct } from "../application/use-cases/update-product";
 import { InMemoryCache } from "../infrastructure/cache/in-memory-cache";
 import {
   SlidingWindowRateLimiter,
@@ -45,6 +46,7 @@ export function createApp(deps: AppDeps) {
   const listProducts = new ListProducts(deps.products, cache);
   const getProduct = new GetProduct(deps.products, cache);
   const createProduct = new CreateProduct(deps.products, cache);
+  const updateProduct = new UpdateProduct(deps.products, cache);
   const deactivateProduct = new DeactivateProduct(deps.products, cache);
   const createOrder = new CreateOrder(deps.orders, deps.products);
   const listOrders = new ListOrders(deps.orders);
@@ -81,6 +83,7 @@ export function createApp(deps: AppDeps) {
         listProducts,
         getProduct,
         createProduct,
+        updateProduct,
         deactivateProduct,
       }),
     )
