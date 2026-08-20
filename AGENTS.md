@@ -240,10 +240,11 @@ explicar o algoritmo numa conversa técnica.
 
 - Algoritmo: **janela deslizante** — guarda os timestamps das requisições por chave e
   descarta os que saíram da janela.
-- Chave: `IP + rota` (assim cada grupo de rota tem seu próprio limite).
+- Chave: `IP + grupo` — dois grupos: `auth` (`/auth/login` e `/auth/register` **compartilham**
+  o mesmo limite) e `general` (demais rotas). Não é um bucket por path isolado.
 - Limites:
   - Geral: **100 requisições / minuto** por IP
-  - `/auth/login` e `/auth/register`: **5 / minuto** por IP (proteção contra força bruta)
+  - Grupo `auth`: **5 / minuto** por IP (proteção contra força bruta)
 - Resposta ao estourar: **429** com header `Retry-After`.
 - Headers em toda resposta: `X-RateLimit-Limit`, `X-RateLimit-Remaining`.
 - Limpeza periódica das chaves velhas, senão o `Map` cresce para sempre.
