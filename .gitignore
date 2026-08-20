@@ -31,7 +31,8 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 
-# local agent/tooling folders that are not part of the API
+# IDE / agent tooling (local only — not part of the API deliverable)
+.cursor/
 .agents/
 .claude/
 .windsurf/
