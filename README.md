@@ -151,7 +151,12 @@ Formato: `{ "error": { "code": "...", "message": "..." } }`.
 ## Cache e rate limit
 
 - **Cache:** `products:list` e `products:{id}`, TTL 60s. Criar/editar/desativar produto invalida o prefixo `products:`.
-- **Rate limit:** janela deslizante. Geral **100/min** por IP; login/register **5/min**. Headers `X-RateLimit-Limit` e `X-RateLimit-Remaining`.
+- **Rate limit:** janela deslizante em memória. Chave `IP + grupo`:
+  - `auth` — `/auth/login` e `/auth/register` **somam no mesmo bucket** (**5/min**)
+  - `general` — demais rotas (**100/min**)
+- Estouro → **429** + `Retry-After`. Headers `X-RateLimit-Limit` e `X-RateLimit-Remaining`.
+- IP: `X-Forwarded-For` (primeiro valor) ou `"local"`. Só confie nesse header atrás de um proxy que você controla; na internet o cliente pode forjá-lo.
+- Várias instâncias da API não compartilham o `Map` — em produção o equivalente seria Redis.
 
 ## Banco
 
@@ -164,14 +169,18 @@ bun run db:seed       # demo
 bun run db:studio     # UI do Drizzle
 ```
 
-## Testes
+## Testes e CI
 
 ```bash
 bun test
 bun test --watch
+bun run typecheck   # tsc --noEmit
+bun run check       # typecheck + testes
 ```
 
-Cobrem domínio, casos de uso (repositórios em memória) e HTTP via `app.handle` — sem subir servidor.
+Cobrem domínio, casos de uso (repositórios em memória) e HTTP via `app.handle` — sem subir servidor nem Postgres.
+
+A cada push/PR para `develop`, o GitHub Actions roda `typecheck` e `bun test` (`.github/workflows/ci.yml`).
 
 ## Como construí
 
