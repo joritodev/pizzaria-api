@@ -2,7 +2,10 @@ import { ConflictError, ForbiddenError, NotFoundError, UnauthorizedError } from 
 import { DomainError } from "../domain/shared/domain-error";
 import { TooManyRequestsError } from "../infrastructure/rate-limit/sliding-window-rate-limiter";
 
-export function toHttpError(error: unknown): {
+export function toHttpError(
+  error: unknown,
+  elysiaCode?: string | number,
+): {
   status: number;
   headers?: Record<string, string>;
   body: { error: { code: string; message: string } };
@@ -32,6 +35,18 @@ export function toHttpError(error: unknown): {
       status: 429,
       headers: { "Retry-After": String(error.retryAfterSeconds) },
       body: { error: { code: "TOO_MANY_REQUESTS", message: error.message } },
+    };
+  }
+
+  // Erros nativos do Elysia (rota inexistente / body fora do schema)
+  if (elysiaCode === "NOT_FOUND" || (typeof error === "object" && error !== null && "code" in error && (error as { code: string }).code === "NOT_FOUND")) {
+    return { status: 404, body: { error: { code: "NOT_FOUND", message: "Rota não encontrada." } } };
+  }
+
+  if (elysiaCode === "VALIDATION" || (typeof error === "object" && error !== null && "code" in error && (error as { code: string }).code === "VALIDATION")) {
+    return {
+      status: 422,
+      body: { error: { code: "VALIDATION", message: "Dados inválidos." } },
     };
   }
 
