@@ -8,6 +8,14 @@ export type CreateProductInput = {
   isAvailable?: boolean;
 };
 
+/** Campos opcionais: só o que vier no PATCH é alterado. */
+export type UpdateProductInput = {
+  name?: string;
+  priceInCents?: number;
+  category?: string;
+  description?: string | null;
+};
+
 export class Product {
   private constructor(
     readonly id: string,
@@ -70,6 +78,45 @@ export class Product {
       this.description,
       false,
     );
+  }
+
+  update(patch: UpdateProductInput): Product {
+    if (
+      patch.name === undefined &&
+      patch.priceInCents === undefined &&
+      patch.category === undefined &&
+      patch.description === undefined
+    ) {
+      throw new DomainError("Informe ao menos um campo para atualizar o produto.");
+    }
+
+    const name = patch.name !== undefined ? patch.name.trim() : this.name;
+    const category = patch.category !== undefined ? patch.category.trim() : this.category;
+    const priceInCents = patch.priceInCents !== undefined ? patch.priceInCents : this.priceInCents;
+    const description =
+      patch.description !== undefined
+        ? patch.description === null
+          ? null
+          : patch.description.trim() || null
+        : this.description;
+
+    if (name.length === 0) {
+      throw new DomainError("O nome do produto é obrigatório.");
+    }
+
+    if (category.length === 0) {
+      throw new DomainError("A categoria do produto é obrigatória.");
+    }
+
+    if (!Number.isInteger(priceInCents)) {
+      throw new DomainError("O preço deve ser informado em centavos, sem casas decimais.");
+    }
+
+    if (priceInCents <= 0) {
+      throw new DomainError("O preço do produto deve ser maior que zero.");
+    }
+
+    return new Product(this.id, name, priceInCents, category, description, this.isAvailable);
   }
 
   toPublic() {

@@ -5,6 +5,7 @@ import { InMemoryCache } from "../../infrastructure/cache/in-memory-cache";
 import { InMemoryProductRepository } from "../../infrastructure/persistence/in-memory-product-repository";
 import { CreateProduct } from "./create-product";
 import { ListProducts } from "./list-products";
+import { UpdateProduct } from "./update-product";
 
 describe("cache do cardápio", () => {
   test("segunda listagem não consulta o repositório de novo", async () => {
@@ -47,6 +48,32 @@ describe("cache do cardápio", () => {
 
     await list.execute();
     await create.execute({ name: "Mussarela", priceInCents: 4000, category: "PIZZA" });
+    await list.execute();
+
+    expect(listCalls).toBe(2);
+  });
+
+  test("editar produto apaga o cache da lista", async () => {
+    const products = new InMemoryProductRepository();
+    const cache = new InMemoryCache();
+    let listCalls = 0;
+    const counting = {
+      save: (product: Product) => products.save(product),
+      findById: (id: string) => products.findById(id),
+      listAvailable: async () => {
+        listCalls += 1;
+        return products.listAvailable();
+      },
+    };
+
+    const created = Product.create({ name: "Calabresa", priceInCents: 4500, category: "PIZZA" });
+    await products.save(created);
+
+    const list = new ListProducts(counting, cache);
+    const update = new UpdateProduct(products, cache);
+
+    await list.execute();
+    await update.execute(created.id, { priceInCents: 4800 });
     await list.execute();
 
     expect(listCalls).toBe(2);

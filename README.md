@@ -51,6 +51,7 @@ Em rotas autenticadas: header `Authorization: Bearer <token>`.
 | GET | `/products` | público | Com cache |
 | GET | `/products/:id` | público | Com cache |
 | POST | `/products` | admin | Body: `name`, `priceInCents`, `category`, `description?` |
+| PATCH | `/products/:id` | admin | Atualiza só os campos enviados; invalida cache |
 | DELETE | `/products/:id` | admin | Soft delete (`isAvailable = false`) |
 | POST | `/orders` | autenticado | `customerId` vem do JWT; **não** envie preço |
 | GET | `/orders` | autenticado | Cliente: os seus; admin: todos |
@@ -149,7 +150,7 @@ Formato: `{ "error": { "code": "...", "message": "..." } }`.
 
 ## Cache e rate limit
 
-- **Cache:** `products:list` e `products:{id}`, TTL 60s. Criar/desativar produto invalida o prefixo `products:`.
+- **Cache:** `products:list` e `products:{id}`, TTL 60s. Criar/editar/desativar produto invalida o prefixo `products:`.
 - **Rate limit:** janela deslizante. Geral **100/min** por IP; login/register **5/min**. Headers `X-RateLimit-Limit` e `X-RateLimit-Remaining`.
 
 ## Banco

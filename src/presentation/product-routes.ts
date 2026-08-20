@@ -5,6 +5,7 @@ import type { CreateProduct } from "../application/use-cases/create-product";
 import type { DeactivateProduct } from "../application/use-cases/deactivate-product";
 import type { GetProduct } from "../application/use-cases/get-product";
 import type { ListProducts } from "../application/use-cases/list-products";
+import type { UpdateProduct } from "../application/use-cases/update-product";
 import { toHttpError } from "./http-error";
 import { readAdmin } from "./read-auth";
 
@@ -13,6 +14,7 @@ export function productRoutes(deps: {
   listProducts: ListProducts;
   getProduct: GetProduct;
   createProduct: CreateProduct;
+  updateProduct: UpdateProduct;
   deactivateProduct: DeactivateProduct;
 }) {
   return new Elysia({ prefix: "/products" })
@@ -36,6 +38,27 @@ export function productRoutes(deps: {
           priceInCents: t.Number(),
           category: t.String({ minLength: 1 }),
           description: t.Optional(t.String()),
+        }),
+      },
+    )
+    .patch(
+      "/:id",
+      async ({ params, body, request, set }) => {
+        try {
+          await readAdmin(deps.tokens, request);
+          return await deps.updateProduct.execute(params.id, body);
+        } catch (error) {
+          const mapped = toHttpError(error);
+          set.status = mapped.status;
+          return mapped.body;
+        }
+      },
+      {
+        body: t.Object({
+          name: t.Optional(t.String({ minLength: 1 })),
+          priceInCents: t.Optional(t.Number()),
+          category: t.Optional(t.String({ minLength: 1 })),
+          description: t.Optional(t.Union([t.String(), t.Null()])),
         }),
       },
     )

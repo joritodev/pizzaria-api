@@ -37,4 +37,32 @@ describe("Product", () => {
       Product.create({ name: "Pizza Calabresa", priceInCents: 45.9, category: "PIZZA" }),
     ).toThrow("centavos");
   });
+
+  test("atualiza só os campos enviados e mantém o id", () => {
+    const product = Product.create({
+      name: "Margherita",
+      priceInCents: 4500,
+      category: "PIZZA",
+      description: "clássica",
+    });
+
+    const updated = product.update({ priceInCents: 4700 });
+
+    expect(updated.id).toBe(product.id);
+    expect(updated.name).toBe("Margherita");
+    expect(updated.priceInCents).toBe(4700);
+    expect(updated.description).toBe("clássica");
+    expect(updated.isAvailable).toBe(true);
+  });
+
+  test("recusa patch vazio ou preço inválido", () => {
+    const product = Product.create({
+      name: "Margherita",
+      priceInCents: 4500,
+      category: "PIZZA",
+    });
+
+    expect(() => product.update({})).toThrow("ao menos um campo");
+    expect(() => product.update({ priceInCents: 0 })).toThrow("preço");
+  });
 });
