@@ -1,8 +1,8 @@
 # Contrato do Projeto — Pizzaria API
 
-Este arquivo é a fonte da verdade do projeto. Vale para o desenvolvedor humano e para
-qualquer agente de IA que trabalhe neste repositório. Em caso de dúvida sobre "como
-fazer X aqui", a resposta está neste documento.
+Este arquivo é a fonte da verdade do projeto: escopo, stack, arquitetura, regras de
+negócio e Definition of Done. Em caso de dúvida sobre "como fazer X aqui", a resposta
+está neste documento.
 
 ---
 
@@ -285,13 +285,13 @@ negócio precisa ter teste**.
 | `docs/` | Documentação / contrato | `docs/contrato-projeto` |
 | `chore/` | Tooling, scripts, ignore, compose | `chore/scripts-bun` |
 
-Nome da branch em **kebab-case**, em português ou inglês curto, **sem** `cursor/` e sem o nome da ferramenta.
+Nome da branch em **kebab-case**, em português ou inglês curto.
 
 - Commits no padrão **Conventional Commits**, em **inglês**, no imperativo, **um tipo por commit**:
   `feat: add order aggregate with status transitions`
 - Tipos de commit: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`. O tipo do commit deve bater com o prefixo da branch.
 - Commits pequenos e coerentes. Nada de "fiz tudo".
-- **Proibido** trailer `Co-authored-by: Cursor` (ou qualquer co-author automático de IDE). O autor é só o dono do repositório.
+- Autor do commit: o dono do repositório (sem trailers automáticos de ferramenta).
 - **PR em português**, sempre para `develop`, com:
   - título claro (`feat: agregado Order com transições de status`)
   - corpo: o que mudou, por que mudou, como testar
@@ -300,23 +300,24 @@ Nome da branch em **kebab-case**, em português ou inglês curto, **sem** `curso
 
 ---
 
-## 13. Como trabalhamos (fluxo com o agente)
+## 13. Como trabalhamos
 
-**Regra didática, acima de todas as outras:** este projeto é também material de estudo.
-O agente explica cada decisão em português, de forma acessível, antes ou junto da
-entrega. Nada entra no repositório que o desenvolvedor não consiga explicar sozinho.
-Se uma solução for elegante mas difícil de explicar, prefira a mais simples.
+**Regra didática:** este projeto é também material de estudo. Cada decisão precisa ser
+explicável em português. Nada entra no repositório que o desenvolvedor não consiga
+defender sozinho numa conversa técnica. Se uma solução for elegante mas difícil de
+explicar, preferimos a mais simples.
 
 | Situação | Fluxo |
 | --- | --- |
-| Feature nova de porte médio | `brainstorming` (curto) → `writing-plans` → `subagent-driven-development` |
+| Feature de porte médio | Alinhar escopo → plano curto → implementar em PRs pequenos |
 | Tarefa pequena e óbvia | Implementar direto, com explicação |
-| Bug ou teste falhando | `systematic-debugging` antes de propor correção |
-| Antes de dizer "pronto" | `verification-before-completion` — rodar `bun test` e mostrar a saída real |
-| Antes de abrir PR | `requesting-code-review` ou Bugbot |
-| Fim da branch | `finishing-a-development-branch` |
+| Bug ou teste falhando | Reproduzir → isolar causa → corrigir → cobrir com teste |
+| Antes de dizer "pronto" | Rodar `bun test` e mostrar a saída real |
+| Antes de abrir PR | Revisar o próprio diff (DoD) |
+| Fim da branch | PR para `develop`, merge, puxar `develop` |
 
-Planos ficam em `docs/superpowers/plans/`.
+Ferramentas de assistência (IDE com IA, etc.) são bem-vindas como **par de programação**,
+desde que o humano revise, teste e consiga explicar o que entrou no Git.
 
 **Nunca:** afirmar que algo funciona sem ter rodado. **Nunca:** implementar mais do que
 foi pedido.

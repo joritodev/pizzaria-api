@@ -173,6 +173,16 @@ bun test --watch
 
 Cobrem domínio, casos de uso (repositórios em memória) e HTTP via `app.handle` — sem subir servidor.
 
+## Como construí
+
+Usei o **Cursor** como par de programação (acelerar boilerplate, sugerir testes, revisar
+diffs). O contrato do projeto está em [`AGENTS.md`](./AGENTS.md): escopo, camadas,
+Definition of Done.
+
+Meu papel: definir/validar decisões (centavos, agregado `Order`, soft delete, cache,
+rate limit), revisar o código, rodar `bun test` e smoke manual, e abrir PRs por feature.
+O que entra no Git é o que consigo explicar numa entrevista.
+
 ## Stack
 
 | Peça | Tecnologia |
