@@ -23,12 +23,22 @@ docker compose up -d
 
 Copie `.env.example` para `.env`. Não commite o `.env`.
 
-### 3. Instalar dependências e aplicar o banco
+### 3. Instalar dependências, migrar e popular o banco
 
 ```bash
 bun install
 bun run db:migrate
+bun run db:seed
 ```
+
+O seed cria usuários de demo e um cardápio de exemplo. Pode rodar de novo sem duplicar (upsert por id fixo).
+
+**Credenciais de desenvolvimento (não use em produção):**
+
+| Papel | E-mail | Senha |
+| --- | --- | --- |
+| Admin | `admin@pizzaria.local` | `admin12345` |
+| Cliente | `cliente@pizzaria.local` | `cliente12345` |
 
 ### 4. Subir a API
 
@@ -70,6 +80,7 @@ Comandos úteis:
 ```bash
 bun run db:generate   # gera SQL a partir do schema
 bun run db:migrate    # aplica migrations pendentes
+bun run db:seed       # cardápio + usuários de demo
 bun run db:studio     # abre o Drizzle Studio
 ```
 
@@ -88,4 +99,4 @@ bun test --watch
 
 ## Status
 
-API completa para o escopo do estágio. Falta seed de cardápio e revisão final.
+API completa para o escopo do estágio: auth, cardápio, pedidos, cache, rate limit e seed de demo.
